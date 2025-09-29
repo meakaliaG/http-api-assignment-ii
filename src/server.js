@@ -7,7 +7,8 @@ const port = process.env.PORT || process.env.NODE_PORT || 3000;
 const urlStruct = {
   '/': htmlHandler.getIndex,
   '/style.css': htmlHandler.getCSS,
-  '/client.js': htmlHandler.getJS,
+  '/bundle.js': htmlHandler.getBundle,
+  // '/client.js': htmlHandler.getJS,
   '/getUsers': jsonHandler.getUsers,
   '/addUser': jsonHandler.addUser,
   '/notReal': jsonHandler.notReal,
@@ -15,6 +16,15 @@ const urlStruct = {
 };
 
 const onRequest = (request, response) => {
+    response.setHeader('Access-Control-Allow-Origin', '*');
+  response.setHeader('Access-Control-Allow-Methods', 'GET, POST, HEAD');
+  response.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
+
+  // handle preflight requests
+  if (request.method === 'OPTIONS') {
+    response.writeHead(204);
+    return response.end();
+  } 
   const protocol = request.connection.encrypted ? 'https' : 'http';
   const parsedURL = new URL(request.url, `${protocol}://${request.headers.host}`);
 
