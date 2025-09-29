@@ -1,32 +1,21 @@
 const users = {};
 
-//HELPER - decides response type
-const getType = (request) => {
-  const accept = request.headers.accept || '';
-  if (accept.includes('application/xml')) {
-    return 'xml';
-  }
-  return 'json';
-};
-
-//const getType = (request) => 'json';
-
 // HELPER - builds message response
-const buildMessage = (state, message, type, isError = false, extra = {}) => {
-  if (type === 'json') {
-    const body = isError ? { message, id: state, ...extra } : { message, ...extra };
-    return JSON.stringify(body);
-  }
+// const buildMessage = (state, message, type, isError = false, extra = {}) => {
+//   if (type === 'json') {
+//     const body = isError ? { message, id: state, ...extra } : { message, ...extra };
+//     return JSON.stringify(body);
+//   }
 
-  // XML response
-  let xml = `<response><message>${message}</message>`;
-  if (isError) xml += `<id>${state}</id>`;
-  for (const [key, val] of Object.entries(extra)) {
-    xml += `<${key}>${val}</${key}`;
-  }
-  xml += '</response>';
-  return xml;
-};
+//   // XML response
+//   let xml = `<response><message>${message}</message>`;
+//   if (isError) xml += `<id>${state}</id>`;
+//   for (const [key, val] of Object.entries(extra)) {
+//     xml += `<${key}>${val}</${key}`;
+//   }
+//   xml += '</response>';
+//   return xml;
+// };
 
 // HELPER - general responder
 // const respond = (
@@ -42,18 +31,18 @@ const buildMessage = (state, message, type, isError = false, extra = {}) => {
 //   response.end();
 // };
 
-const respond = (request, response, statusCode, statusName, message, isError = false, extra = {}) => {
-    const body = {
-      statusName,
-      message,
-      ...extra,
-    };
-  
-    response.writeHead(statusCode, { 'Content-Type': 'application/json' });
-    response.write(JSON.stringify(body));
-    response.end();
+const respond = (request, response, statusCode, statusName, message,
+     isError = false, extra = {}) => {
+  const body = {
+    statusName,
+    message,
+    ...extra,
   };
-  
+
+  response.writeHead(statusCode, { 'Content-Type': 'application/json' });
+  response.write(JSON.stringify(body));
+  response.end();
+};
 
 // GET/HEAD /getUsers
 const getUsers = (request, response) => {
@@ -65,31 +54,30 @@ const getUsers = (request, response) => {
 
 // POST /getUsers
 const addUser = (request, response) => {
-    if (request.method !== 'POST') {
-      return respond(request, response, 405, 'methodNotAllowed', 'Only POST is allowed.');
+  if (request.method !== 'POST') {
+    return respond(request, response, 405, 'methodNotAllowed', 'Only POST is allowed.');
+  }
+
+  let body = '';
+  request.on('data', (chunk) => { body += chunk; });
+  request.on('end', () => {
+    let parsed;
+    try { parsed = JSON.parse(body); } catch (e) { return respond(request, response, 400, 'badJSON', 'Invalid JSON body.'); }
+
+    const { name, age } = parsed;
+    if (!name || !age) {
+      return respond(request, response, 400, 'missingParams', 'Missing name or age.');
     }
-  
-    let body = '';
-    request.on('data', (chunk) => { body += chunk; });
-    request.on('end', () => {
-      let parsed;
-      try { parsed = JSON.parse(body); } 
-      catch (e) { return respond(request, response, 400, 'badJSON', 'Invalid JSON body.'); }
-  
-      const { name, age } = parsed;
-      if (!name || !age) {
-        return respond(request, response, 400, 'missingParams', 'Missing name or age.');
-      }
-  
-      if (users[name]) {
-        users[name].age = age;
-        return respond(request, response, 204, 'updated', `User ${name} updated successfully.`);
-      }
-  
-      users[name] = { name, age };
-      return respond(request, response, 201, 'created', `User ${name} created successfully.`);
-    });
-  };
+
+    if (users[name]) {
+      users[name].age = age;
+      return respond(request, response, 204, 'updated', `User ${name} updated successfully.`);
+    }
+
+    users[name] = { name, age };
+    return respond(request, response, 201, 'created', `User ${name} created successfully.`);
+  });
+};
 
 // /notReal
 const notReal = (request, response) => {

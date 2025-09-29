@@ -1,12 +1,20 @@
 const API_URL = 'http://localhost:3000';
+  
+const updateUserList = async () => {
+    const response = await fetch('/getUsers', { method: 'GET' });
+    const json = await response.json();
+    const content = document.getElementById('content');
+    content.textContent = JSON.stringify(json.users, null, 2);
+};
 
 const addUser = async (name, age) => {
   try {
     const response = await fetch(`${API_URL}/addUser`, {
       method: 'POST',
       headers: {
-         'Content-Type': 'application/json',
-          'Accept': 'application/json' },
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
       body: JSON.stringify({ name, age }),
     });
 
@@ -29,7 +37,7 @@ const sendRequest = async (path, method = 'GET') => {
   try {
     const response = await fetch(`${API_URL}${path}`, {
       method,
-      headers: { 'Accept': 'application/json' },
+      headers: { Accept: 'application/json' },
     });
 
     const content = document.getElementById('content');
@@ -47,31 +55,31 @@ const sendRequest = async (path, method = 'GET') => {
   }
 };
 
-window.onload = () => {
-    const nameForm = document.getElementById('nameForm');
-    const nameInput = document.getElementById('nameField');
-    const ageInput = document.getElementById('ageField');
-  
-    userForm.onsubmit = (e) => {
-        e.preventDefault(); 
-    
-        const path = urlField.value;
-        const method = methodSelect.value.toUpperCase();
-        sendRequest(path, method);
-    };
 
-    nameForm.onsubmit = (e) => {
-      e.preventDefault(); 
-  
-      const name = nameInput.value.trim();
-      const age = parseInt(ageInput.value, 10);
-  
-      if (!name || isNaN(age)) {
-        alert('Please enter a valid name and age.');
-        return;
-      }
-  
-      addUser(name, age);
-    };
+window.onload = () => {
+  const nameForm = document.getElementById('nameForm');
+  const nameInput = document.getElementById('nameField');
+  const ageInput = document.getElementById('ageField');
+
+  userForm.onsubmit = (e) => {
+    e.preventDefault();
+
+    const path = urlField.value;
+    const method = methodSelect.value.toUpperCase();
+    sendRequest(path, method);
   };
-  
+
+  nameForm.onsubmit = (e) => {
+    e.preventDefault();
+
+    const name = nameInput.value.trim();
+    const age = parseInt(ageInput.value, 10);
+
+    if (!name || isNaN(age)) {
+      alert('Please enter a valid name and age.');
+      return;
+    }
+
+    addUser(name, age);
+  };
+};

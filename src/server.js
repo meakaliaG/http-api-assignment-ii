@@ -16,7 +16,7 @@ const urlStruct = {
 };
 
 const onRequest = (request, response) => {
-    response.setHeader('Access-Control-Allow-Origin', '*');
+  response.setHeader('Access-Control-Allow-Origin', '*');
   response.setHeader('Access-Control-Allow-Methods', 'GET, POST, HEAD');
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
 
@@ -24,7 +24,7 @@ const onRequest = (request, response) => {
   if (request.method === 'OPTIONS') {
     response.writeHead(204);
     return response.end();
-  } 
+  }
   const protocol = request.connection.encrypted ? 'https' : 'http';
   const parsedURL = new URL(request.url, `${protocol}://${request.headers.host}`);
 
